@@ -235,7 +235,6 @@ class CourseTimetable:
         """Finds grouped activities, inneficiently :), and writes them to
         `self.activities`
         """
-
         for i, (main_key, main_value) in enumerate(self.activities.items()):
 
             # -P signals that the activity should have a pair (for
