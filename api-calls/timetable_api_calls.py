@@ -216,8 +216,8 @@ class CourseTimetable:
                 "activity": activity_info.get("activity_type"),
                 "day": activity_info.get("day_of_week"),
                 "location": activity_info.get("location"),
-                "start_time": start_time.strftime(DATETIME_FORMAT),
-                "end_time": end_time.strftime(DATETIME_FORMAT),
+                "start-time": start_time.strftime(DATETIME_FORMAT),
+                "end-time": end_time.strftime(DATETIME_FORMAT),
                 "schedule": activity_info.get("activitiesDays"),
                 "colour": activity_info.get("color"),
                 "department": activity_info.get("department"),
@@ -353,6 +353,8 @@ if __name__ == "__main__":
     course_obj = CourseTimetable("CSSE2010",
                                  semester=TTableInputs.Semester.S2,
                                  campus_id=TTableInputs.Campus.STLUC)
+
     print(course_obj.get_course_list())
     print(course_obj.get_activities())
     print(course_obj.get_lectures())
+    print(course_obj.get_uncategorised())
