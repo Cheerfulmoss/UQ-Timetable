@@ -235,15 +235,25 @@ class CourseTimetable:
         """Finds grouped activities, inneficiently :), and writes them to
         `self.activities`
         """
-        for main_act in self.activities:
-            for paired_act in self.activities:
-                if main_act == paired_act:
+
+        for i, (main_key, main_value) in enumerate(self.activities.items()):
+
+            # -P signals that the activity should have a pair (for
+            # generality I assume group, so more than 2, but I haven't seen
+            # that yet.
+            if "-P" not in main_key[1]:
+                continue
+
+            for j, pair_key in enumerate(self.activities):
+                if (
+                    i == j or
+                    "-P" not in pair_key[1] or
+                    main_key[0] != pair_key[0]
+                ):
                     continue
 
-                if (main_act[0] == paired_act[0] and
-                        main_act[1][:-1] == paired_act[1][:-1]):
-                    self.activities[main_act].setdefault("group", [])
-                    self.activities[main_act]["group"].append(paired_act)
+                if main_key[1][:-1] == pair_key[1][:-1]:
+                    main_value["group"].append(pair_key)
 
     def get_course_list(self) -> list[str]:
         return list(self.course_versions)
