@@ -1,3 +1,10 @@
+"""
+Written: not me, asking how to credit orignal author now 
+Edited: Alexander Burow
+
+License: GPL3
+"""
+
 import requests
 import logging
 import datetime as dt
