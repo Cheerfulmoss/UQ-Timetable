@@ -193,10 +193,16 @@ class CourseTimetable:
         :rtype: None
         """
         self.activities.clear()
+        linker = False
 
         for activity, activity_info in self.course["activities"].items():
             activity_code = (activity_info.get("activity_group_code"),
                              activity_info.get("activity_code"))
+
+            # Set a flag if activities need to be taken in pairs
+            if not linker and "-P" in activity_code[1]:
+                linker = True
+
             start_time = dt.datetime.strptime(
                 activity_info.get("start_time"),
                 DATETIME_FORMAT
@@ -215,11 +221,29 @@ class CourseTimetable:
                 "schedule": activity_info.get("activitiesDays"),
                 "colour": activity_info.get("color"),
                 "department": activity_info.get("department"),
+                "group": list(),
                 # Warning: The following two entries can be
                 #   EXTREMELY nonsensical!!! Use with caution...
                 "is_open": activity_info.get("selectable"),
-                "spots": activity_info.get("availability")
+                "spots": activity_info.get("availability"),
             }
+
+        if linker:
+            self._linker()
+
+    def _linker(self):
+        """Finds grouped activities, inneficiently :), and writes them to
+        `self.activities`
+        """
+        for main_act in self.activities:
+            for paired_act in self.activities:
+                if main_act == paired_act:
+                    continue
+
+                if (main_act[0] == paired_act[0] and
+                        main_act[1][:-1] == paired_act[1][:-1]):
+                    self.activities[main_act].setdefault("group", [])
+                    self.activities[main_act]["group"].append(paired_act)
 
     def get_course_list(self) -> list[str]:
         return list(self.course_versions)
