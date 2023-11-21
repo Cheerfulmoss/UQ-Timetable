@@ -35,16 +35,16 @@ None as of now.
 
 ## Pull Request Process
 
-Please provide the following when submitting a pull request:
+When submitting a pull request, please follow these steps:
 
 1. Fork the repository and create a branch for your work.
-2. Make changes and commit them. Follow the commit message guidelines.
+2. Make changes and commit them, adhering to the commit message guidelines.
 3. Open a pull request with a clear title and description.
-4. Mention any relevant issue numbers in your pull request description.
+4. If your pull request addresses any existing issues, mention the relevant issue numbers in the description.
 
 ## Code Review Expectations
 
-We trust our contributors to follow best practices for code quality, style, and functionality. Code reviews will provide feedback and suggestions for improvement.
+We trust that contributors will adhere to best practices for code quality, style, and functionality. Code reviews will include constructive feedback and suggestions for improvement.
 
 ## Issue Guidelines
 
@@ -64,4 +64,5 @@ We welcome feature requests! When submitting a feature request, please include:
 
 ## License Agreement
 
-By contributing to this project, you agree to license your work under the terms of the project's chosen license.
+By contributing to this project, you agree to license your work under the terms of the [GNU General Public License v3.0 (GPL-3.0)](https://www.gnu.org/licenses/gpl-3.0.html). Please review the full text of the license in the [LICENSE](./LICENSE) file.
+
