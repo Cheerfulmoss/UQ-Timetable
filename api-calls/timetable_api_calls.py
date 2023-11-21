@@ -1,5 +1,5 @@
 """
-Written: not me, asking how to credit orignal author now 
+Written: Oliver Sparrow
 Edited: Alexander Burow
 
 License: GPL3
