@@ -13,8 +13,7 @@ None as of now.
 
 The project follows the following folder structure:
 
-Main
-
+Main  
 |-- api-calls
 
 ## Code Style Guidelines
