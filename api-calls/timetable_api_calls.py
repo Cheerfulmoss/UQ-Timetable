@@ -195,9 +195,8 @@ class CourseTimetable:
         self.activities.clear()
 
         for activity, activity_info in self.course["activities"].items():
-            activity_code = (
-                f"{activity_info.get('activity_group_code')} "
-                f"{activity_info.get('activity_code')}")
+            activity_code = (activity_info.get("activity_group_code"),
+                             activity_info.get("activity_code"))
             start_time = dt.datetime.strptime(
                 activity_info.get("start_time"),
                 DATETIME_FORMAT
@@ -318,9 +317,9 @@ class CourseTimetable:
 
 ################################################################################
 if __name__ == "__main__":
-    course_obj = CourseTimetable("MATH1071",
-                                 semester=TTableInputs.Semester.S1,
+    course_obj = CourseTimetable("CSSE2010",
+                                 semester=TTableInputs.Semester.S2,
                                  campus_id=TTableInputs.Campus.STLUC)
     print(course_obj.get_course_list())
     print(course_obj.get_activities())
-    print(course_obj.get_uncategorised())
+    print(course_obj.get_lectures())
