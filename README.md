@@ -11,10 +11,28 @@ None as of now.
 
 ## Folder Structure
 
-The project follows the following folder structure:
+The project adheres to the following organized folder structure:
 
-Main  
-|-- api-calls
+├── <root dir>
+│   ├── Main.py
+    └── cogs
+        ├── api
+            └── timetable_api_calls.py
+        ├── base-files
+            └── api-calls-cache.json
+        ├── base.py
+        └── helpCommand.py
+
+In this structure:
+
+- <root dir> represents the main directory of the project.
+- Main.py is the main entry point of the project.
+- The cogs directory contains submodules for different functionalities:
+  - api includes the timetable_api_calls.py file.
+- The base-files directory houses essential files, such as api-calls-cache.json.
+- base.py and helpCommand.py are main components of the project.
+
+Feel free to replace the placeholders like <root dir> with the actual names relevant to your project.
 
 ## Code Style Guidelines
 
