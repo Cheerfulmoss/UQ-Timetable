@@ -13,15 +13,15 @@ None as of now.
 
 The project adheres to the following organized folder structure:
 
-├── <root dir>
-│   ├── Main.py
-    └── cogs
-        ├── api
-            └── timetable_api_calls.py
-        ├── base-files
-            └── api-calls-cache.json
-        ├── base.py
-        └── helpCommand.py
+├── <root dir>  
+│   ├── Main.py  
+    └── cogs  
+        ├── api  
+            └── timetable_api_calls.py  
+        ├── base-files  
+            └── api-calls-cache.json  
+        ├── base.py  
+        └── helpCommand.py  
 
 In this structure:
 
