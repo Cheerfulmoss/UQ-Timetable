@@ -7,7 +7,7 @@ Make sure you have the following prerequisites installed:
 - Python 3.12.0
   - [Installation Guide](https://www.python.org/downloads/release)
 
-# Libraries - Incomplete
+### Libraries - Incomplete
   
 - [Requests library](https://docs.python-requests.org/en/latest/) - v2.31.0
   - Install using: `pip install requests`
