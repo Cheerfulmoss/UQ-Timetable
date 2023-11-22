@@ -2,8 +2,16 @@
 
 ## Prerequisites
 
+Make sure you have the following prerequisites installed:
+
 - Python 3.12.0
+  - [Installation Guide](https://www.python.org/downloads/release)
+  
 - [Requests library](https://docs.python-requests.org/en/latest/)
+  - Install using: `pip install requests`
+
+- [Discord.py library](https://discordpy.readthedocs.io/en/stable/)
+  - Install using: `pip install discord.py`
 
 ## Setup Instructions
 
