@@ -12,7 +12,7 @@ None as of now.
 ## Folder Structure
 
 The project adheres to the following organized folder structure:
-
+```
 ├── <root dir>  
 │   ├── Main.py  
     └── cogs  
@@ -22,7 +22,7 @@ The project adheres to the following organized folder structure:
             └── api-calls-cache.json  
         ├── base.py  
         └── helpCommand.py  
-
+```
 In this structure:
 
 - <root dir> represents the main directory of the project.
