@@ -1,21 +1,30 @@
 import discord
-from discord.ext import commands
 import logging
-from datetime import datetime, timedelta
 import json
 import os
 import re
+
+from time import perf_counter_ns
+from discord.ext import commands, tasks
+from datetime import datetime, timedelta
 from .api.timetable_api_calls import CourseTimetable, TTableInputs
 
 log_format = "[%(asctime)s] [%(levelname)-8s] %(name)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=log_format)
 logger = logging.getLogger(__name__)
 
+allowed_accounts = [398437778788188163]
+
+
+def is_allowed_account(ctx):
+    return ctx.author.id in allowed_accounts
+
 
 class BaseCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.cache_path = f"{os.getcwd()}/cogs/base-files/api-calls-cache.json"
+        self.admin_path = f"{os.getcwd()}/cogs/base-files/admin.json"
         self.default_act_cats = [
             "activity", "day", "location", "start-time", "end-time",
             "department", "group",
@@ -24,6 +33,13 @@ class BaseCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         logger.info(f"{self.__class__.__name__} cog is ready.")
+        self.check_cache.start()
+
+    @commands.Cog.listener()
+    async def on_shutdown(self):
+        logger.info(f"{self.__class__.__name__} cog shutting down. Stopping "
+                    f"periodic tasks.")
+        self.check_cache.stop()
 
     @commands.command(name="ping", help="Ping the bot")
     async def ping(self, ctx):
@@ -57,20 +73,16 @@ class BaseCog(commands.Cog):
             return
 
         # https://stackoverflow.com/questions/312443/how-do-i-split-a-list-into-equally-sized-chunks
-        chunked_keys = [list(course_activities.keys())[i:i + 9]
-                        for i in range(0, len(course_activities.keys()), 9)]
+        chunked_keys = [list(course_activities.keys())[i:i + 9] for i in
+                        range(0, len(course_activities.keys()), 9)]
+        chunked_acts = [dict((key, course_activities[key]) for key in chunk) for
+                        chunk in chunked_keys]
 
-        chunked_acts = []
-        for chunk in chunked_keys:
-            chunked_data = {
-                key: course_activities[key]
-                for key in chunk
-            }
-            chunked_acts.append(chunked_data)
+        course_key = f"{course}-{semester}-{campus}"
 
         for index, chunk in enumerate(chunked_acts):
             activities_embed = discord.Embed(
-                title=f"Activities for {course} - P{index}",
+                title=f"Activities for {course_key} - P{index}",
                 description="Activities are lectures, tutorials, practicals, "
                             "etc.",
                 colour=discord.Colour.dark_magenta()
@@ -81,6 +93,44 @@ class BaseCog(commands.Cog):
                     value=self.format_activity_data(data, optional)
                 )
             await ctx.send(embed=activities_embed)
+
+    @commands.command(name="clear-cache",
+                      help="Clear the cache")
+    @commands.check(is_allowed_account)
+    async def clear_cache(self, ctx):
+        with open(self.cache_path, "w") as file:
+            json.dump({}, file)
+
+        await ctx.send("Cache cleared")
+
+    @tasks.loop(hours=2)
+    async def check_cache(self):
+        with open(self.admin_path, "r") as file:
+            admin_data = json.load(file)
+
+        if ("last-check-date" not in admin_data or
+                datetime.now() - datetime.fromisoformat(admin_data.get(
+                    "last-check-date")) >= timedelta(
+                    days=1)):
+            logger.info("Checking cache...")
+            with open(self.admin_path, "r") as file:
+                cache_data = json.load(file)
+
+            for key, value in cache_data.items():
+                if ("request-date" not in value or
+                        datetime.now() - datetime.fromisoformat(value.get(
+                            "request-date")) >= timedelta(
+                            days=7)):
+                    logger.info(f"Cache data for {key} removed.")
+                    cache_data.pop(key)
+
+            with open(self.admin_path, "w") as file:
+                json.dump(cache_data, file)
+
+            with open(self.admin_path, "w") as file:
+                admin_data["last-check-date"] = datetime.now().isoformat()
+                json.dump(admin_data, file)
+        logger.info("Cache check complete.")
 
     def format_activity_data(self, data, optional):
         message = []
@@ -118,17 +168,22 @@ class BaseCog(commands.Cog):
         with open(self.cache_path, "r") as file:
             data = json.load(file)
 
-        if data.get(course) is not None:
-            request_date = datetime.fromisoformat(data.get(course).get(
-                "request-date"))
+        course_key = f"{course}-{semester}-{campus}"
+
+        if course_key in data and "request-date" in data[course_key]:
+            request_date = datetime.fromisoformat(
+                data[course_key]["request-date"]
+            )
             now = datetime.now()
 
             date_difference = now - request_date
             if date_difference < timedelta(days=7):
-                return data.get(course).get("course-activities")
+                return data[course_key]["course-activities"]
 
+        start = perf_counter_ns()
         course_obj = self.get_course_obj(course, semester, campus)
-        logger.info("API call made.")
+        duration = round((perf_counter_ns() - start) / 1000000, 5)
+        logger.info(f"API call made, {duration} ms")
 
         with open(self.cache_path, "r") as file:
             data = json.load(file)
@@ -137,7 +192,7 @@ class BaseCog(commands.Cog):
             fixed_activities = {" ".join(key): value
                                 for key, value in activities.items()}
 
-            data[course] = {
+            data[course_key] = {
                 "course-activities": fixed_activities,
                 "request-date": datetime.now().isoformat()
             }

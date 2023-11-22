@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 class HelpCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.excluded_commands = ["clear-cache"]
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -19,8 +20,9 @@ class HelpCog(commands.Cog):
     async def custom_help(self, ctx, *args):
         if not args:
             # Display a general help message
-            command_list = [f"- {command.name}: {command.help}"
-                            for command in self.bot.commands]
+            command_list = [f"- `{command.name}`: {command.help}"
+                            for command in self.bot.commands
+                            if command.name not in self.excluded_commands]
 
             # https://stackoverflow.com/questions/24483182/python-split-list-into-n-chunks
             split_commands = tuple(tuple(command_list[i::3]) for i in range(3))
