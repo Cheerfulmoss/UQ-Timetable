@@ -105,16 +105,30 @@ class BaseCog(commands.Cog):
 
     @tasks.loop(hours=2)
     async def check_cache(self):
-        with open(self.admin_path, "r") as file:
-            admin_data = json.load(file)
+        try:
+            with open(self.admin_path, "r") as file:
+                admin_data = json.load(file)
+        except json.JSONDecodeError as e:
+            logger.error(f"Error decoding JSON: {e}")
+            with open(self.admin_path, "w") as file:
+                json.dump({}, file)
+                logger.info("Clearing admin cache cleared.")
+                admin_data = {}
 
         if ("last-check-date" not in admin_data or
                 datetime.now() - datetime.fromisoformat(admin_data.get(
                     "last-check-date")) >= timedelta(
                     days=1)):
             logger.info("Checking cache...")
-            with open(self.admin_path, "r") as file:
-                cache_data = json.load(file)
+            try:
+                with open(self.cache_path, "r") as file:
+                    cache_data = json.load(file)
+            except json.JSONDecodeError as e:
+                logger.error(f"Error decoding JSON: {e}")
+                with open(self.cache_path, "w") as file:
+                    json.dump({}, file)
+                    logger.info("Clearing api call cache cleared.")
+                cache_data = {}
 
             for key, value in cache_data.items():
                 if ("request-date" not in value or
@@ -124,7 +138,7 @@ class BaseCog(commands.Cog):
                     logger.info(f"Cache data for {key} removed.")
                     cache_data.pop(key)
 
-            with open(self.admin_path, "w") as file:
+            with open(self.cache_path, "w") as file:
                 json.dump(cache_data, file)
 
             with open(self.admin_path, "w") as file:
@@ -183,7 +197,7 @@ class BaseCog(commands.Cog):
         start = perf_counter_ns()
         course_obj = self.get_course_obj(course, semester, campus)
         duration = round((perf_counter_ns() - start) / 1000000, 5)
-        logger.info(f"API call made, {duration} ms")
+        logger.info(f"API call made, {duration} ms.")
 
         with open(self.cache_path, "r") as file:
             data = json.load(file)
