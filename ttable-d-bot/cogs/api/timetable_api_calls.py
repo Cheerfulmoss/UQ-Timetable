@@ -222,8 +222,11 @@ class CourseTimetable:
                 activity_info.get("start_time"),
                 DATETIME_FORMAT
             )
+
+            activity_duration = int(activity_info.get("duration"))
+
             end_time = start_time + dt.timedelta(
-                minutes=int(activity_info.get("duration"))
+                minutes=activity_duration
             )
 
             self.activities[activity_code] = {
@@ -237,6 +240,8 @@ class CourseTimetable:
                 "colour": activity_info.get("color"),
                 "department": activity_info.get("department"),
                 "group": list(),
+                "intervals": activity_duration / 30,  # Length of the course
+                                                      # in 30 min intervals
                 # Warning: The following two entries can be
                 #   EXTREMELY nonsensical!!! Use with caution...
                 "is_open": activity_info.get("selectable"),
