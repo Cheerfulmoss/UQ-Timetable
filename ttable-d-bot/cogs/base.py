@@ -130,7 +130,7 @@ class BaseCog(commands.Cog):
             with open(self.admin_path, "w") as file:
                 admin_data["last-check-date"] = datetime.now().isoformat()
                 json.dump(admin_data, file)
-        logger.info("Cache check complete.")
+            logger.info("Cache check complete.")
 
     def format_activity_data(self, data, optional):
         message = []
