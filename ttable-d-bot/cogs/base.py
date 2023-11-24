@@ -7,7 +7,8 @@ import re
 from time import perf_counter_ns
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
-from .api.timetable_api_calls import CourseTimetable, TTableInputs
+from api.timetable_api_calls import CourseTimetable
+from api.TTableInputs import TTableInputs
 
 log_format = "[%(asctime)s] [%(levelname)-8s] %(name)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=log_format)
@@ -23,8 +24,11 @@ def is_allowed_account(ctx):
 class BaseCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.cache_path = f"{os.getcwd()}/cogs/base-files/api-calls-cache.json"
-        self.admin_path = f"{os.getcwd()}/cogs/base-files/admin.json"
+        self.cache_path = f"{os.getcwd()}/base-files/api-calls-cache.json"
+        self.admin_path = f"{os.getcwd()}/base-files/admin.json"
+
+        self.paths = {"cache": self.cache_path, "admin": self.admin_path}
+
         self.default_act_cats = [
             "activity", "day", "location", "start-time", "end-time",
             "department", "group",
@@ -68,7 +72,7 @@ class BaseCog(commands.Cog):
         try:
             course_activities = self.get_course_activities(course, semester,
                                                            campus)
-        except ValueError:
+        except ValueError as e:
             await ctx.send(embed=self.display_activities_command_error(ctx))
             return
 
@@ -94,41 +98,67 @@ class BaseCog(commands.Cog):
                 )
             await ctx.send(embed=activities_embed)
 
+    def display_activities_command_error(self, ctx):
+        message = ("Given inputs are invalid!\n"
+                   f"`{self.bot.command_prefix}"
+                   f"{self.display_activities.name} "
+                   "-cs <course code> -s <semester> -c <campus> "
+                   "[--schedule]`\n"
+                   "Order does **_not_** matter")
+        embed = discord.Embed(
+            title=f"Command ERROR - {ctx.command.name}",
+            description=message,
+            colour=discord.Colour.red())
+        embed.add_field(
+            name="**<course code>**",
+            value="As an example, CSSE2010"
+        )
+        embed.add_field(
+            name="**<semester>**",
+            value="\n".join(f"- {semester}"
+                            for semester in
+                            TTableInputs.Semester.__members__.values())
+        )
+        embed.add_field(
+            name="**<campus>**",
+            value="\n".join(f"- {campus}"
+                            for campus in
+                            TTableInputs.Campus.__members__.values())
+        )
+        return embed
+
     @commands.command(name="clear-cache",
                       help="Clear the cache")
     @commands.check(is_allowed_account)
-    async def clear_cache(self, ctx):
-        with open(self.cache_path, "w") as file:
+    async def clear_cache_command(self, ctx):
+        self.clear_json("cache")
+        await ctx.send(f"`{os.path.basename(self.paths["cache"])}` cleared")
+
+    def clear_json(self, path_key: str):
+        with open(self.paths[path_key], "w") as file:
             json.dump({}, file)
+        logger.info(f"{os.path.basename(self.paths[path_key])} cleared.")
 
-        await ctx.send("Cache cleared")
-
-    @tasks.loop(hours=2)
-    async def check_cache(self):
+    def extract_from_json(self, path_key: str):
         try:
-            with open(self.admin_path, "r") as file:
-                admin_data = json.load(file)
+            with open(self.paths[path_key], "r") as file:
+                data = json.load(file)
         except json.JSONDecodeError as e:
             logger.error(f"Error decoding JSON: {e}")
-            with open(self.admin_path, "w") as file:
-                json.dump({}, file)
-                logger.info("Clearing admin cache cleared.")
-                admin_data = {}
+            self.clear_json(path_key)
+            data = {}
+        return data
+
+    @tasks.loop(minutes=1)
+    async def check_cache(self):
+        admin_data = self.extract_from_json("admin")
 
         if ("last-check-date" not in admin_data or
                 datetime.now() - datetime.fromisoformat(admin_data.get(
                     "last-check-date")) >= timedelta(
                     days=1)):
             logger.info("Checking cache...")
-            try:
-                with open(self.cache_path, "r") as file:
-                    cache_data = json.load(file)
-            except json.JSONDecodeError as e:
-                logger.error(f"Error decoding JSON: {e}")
-                with open(self.cache_path, "w") as file:
-                    json.dump({}, file)
-                    logger.info("Clearing api call cache cleared.")
-                cache_data = {}
+            cache_data = self.extract_from_json("cache")
 
             for key, value in cache_data.items():
                 if ("request-date" not in value or
@@ -170,17 +200,8 @@ class BaseCog(commands.Cog):
             )
         return "\n".join(message)
 
-    def display_activities_command_error(self, ctx):
-        message = ("")
-        embed = discord.Embed(
-            title=f"Command ERROR - {ctx.command.name}",
-            description=message,
-            colour=discord.Colour.red())
-        return embed
-
     def get_course_activities(self, course: str, semester: str, campus: str):
-        with open(self.cache_path, "r") as file:
-            data = json.load(file)
+        data = self.extract_from_json("cache")
 
         course_key = f"{course}-{semester}-{campus}"
 
@@ -199,17 +220,14 @@ class BaseCog(commands.Cog):
         duration = round((perf_counter_ns() - start) / 1000000, 5)
         logger.info(f"API call made, {duration} ms.")
 
-        with open(self.cache_path, "r") as file:
-            data = json.load(file)
+        activities = course_obj.get_activities()
+        fixed_activities = {" ".join(key): value
+                            for key, value in activities.items()}
 
-            activities = course_obj.get_activities()
-            fixed_activities = {" ".join(key): value
-                                for key, value in activities.items()}
-
-            data[course_key] = {
-                "course-activities": fixed_activities,
-                "request-date": datetime.now().isoformat()
-            }
+        data[course_key] = {
+            "course-activities": fixed_activities,
+            "request-date": datetime.now().isoformat()
+        }
         with open(self.cache_path, "w") as file:
             json.dump(data, file)
         return fixed_activities
