@@ -27,12 +27,14 @@ The project adheres to the following organized folder structure:
 ```
 ├── <root-dir>
 │   ├── Main.py
+│   ├── api
+│   │   ├── TTableInputs.py
+│   │   ├── __init__.py
+│   │   └── timetable_api_calls.py
+│   ├── base-files
+│   │   ├── admin.json
+│   │   └── api-calls-cache.json
     └── cogs
-        ├── api
-        │   └── timetable_api_calls.py
-        ├── base-files
-        │   ├── admin.json
-        │   └── api-calls-cache.json
         ├── base.py
         └── helpCommand.py
 ```
