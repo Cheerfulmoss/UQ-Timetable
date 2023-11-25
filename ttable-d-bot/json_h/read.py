@@ -1,18 +1,33 @@
 import logging
 import json
 import os
-import shutil
-from datetime import datetime
 
 from .write import JsonWriter as jw
 
 
 class JsonReader:
     def __init__(self):
+        """
+        Initializes a JsonReader instance.
+
+        This class provides methods for reading JSON files, including error
+        handling and clearing content with the help of JsonWriter.
+        """
         self._default_logger = logging.getLogger(__name__)
 
     def extract_from_json_cache(self, file_path: str,
-                                logger: logging.Logger = None):
+                                logger: logging.Logger = None) -> dict:
+        """
+        Extracts data from a JSON file, with error handling.
+
+        :param file_path: The path to the JSON file.
+            :type: str.
+        :param logger: (Optional) The logger to use. If not provided, the
+            default logger is used.
+            :type: logging.Logger or None.
+        :return: The extracted data from the JSON file.
+            :rtype: dict.
+        """
         logger = logger or self._default_logger
         filename = os.path.basename(file_path)
 
