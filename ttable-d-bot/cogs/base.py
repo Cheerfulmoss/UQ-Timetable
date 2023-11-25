@@ -11,7 +11,8 @@ from datetime import datetime, timedelta
 from api.timetable_api_calls import CourseTimetable
 from api.TTableInputs import TTableInputs
 
-from json_h.read import clear_json, extract_from_json
+from json_h.read import JsonReader as jr
+from json_h.write import JsonWriter as jw
 
 log_format = "[%(asctime)s] [%(levelname)-8s] %(name)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=log_format)
@@ -134,20 +135,22 @@ class BaseCog(commands.Cog):
                       help="Clear the cache")
     @commands.check(is_allowed_account)
     async def clear_cache_command(self, ctx):
-        clear_json(logger, self.paths["cache"])
+        jw().clear_json(self.paths["cache"], logger=logger)
         await ctx.send(f"`{os.path.basename(self.paths["cache"])}` cleared")
 
     # 1 MINUTE FOR TESTING - 24 HOURS FOR FINAL (as a minimum)
     @tasks.loop(minutes=1)
     async def check_cache(self):
-        admin_data = extract_from_json(logger, self.paths["admin"])
+        admin_data = jr().extract_from_json_cache(self.paths["admin"],
+                                                  logger=logger)
 
         if ("last-check-date" not in admin_data or
                 datetime.now() - datetime.fromisoformat(admin_data.get(
                     "last-check-date")) >= timedelta(
                     days=1)):
             logger.info("Checking cache...")
-            cache_data = extract_from_json(logger, self.paths["cache"])
+            cache_data = jr().extract_from_json_cache(self.paths["cache"],
+                                                      logger=logger)
 
             for key, value in cache_data.items():
                 if ("request-date" not in value or
@@ -190,7 +193,8 @@ class BaseCog(commands.Cog):
         return "\n".join(message)
 
     def get_course_activities(self, course: str, semester: str, campus: str):
-        data = extract_from_json(logger, self.paths["cache"])
+        data = jr().extract_from_json_cache(self.paths["cache"],
+                                            logger=logger)
 
         course_key = f"{course}-{semester}-{campus}"
 
