@@ -137,18 +137,21 @@ class BaseCog(commands.Cog):
     def clear_json(self, path_key: str):
         with open(self.paths[path_key], "w") as file:
             json.dump({}, file)
-        logger.info(f"{os.path.basename(self.paths[path_key])} cleared.")
+        logger.info(f"{os.path.basename(self.paths[path_key])} cleared/reset.")
 
     def extract_from_json(self, path_key: str):
         try:
             with open(self.paths[path_key], "r") as file:
                 data = json.load(file)
+            return data
         except json.JSONDecodeError as e:
             logger.error(f"Error decoding JSON: {e}")
-            self.clear_json(path_key)
-            data = {}
-        return data
+        except FileNotFoundError as e:
+            logger.error(f"{os.path.basename(self.paths[path_key])} DNE: {e}")
+        self.clear_json(path_key)
+        return {}
 
+    # SHOULD NOT BE 1 MINUTE IN FINAL, JUST FOR TESTING!!!!
     @tasks.loop(minutes=1)
     async def check_cache(self):
         admin_data = self.extract_from_json("admin")
