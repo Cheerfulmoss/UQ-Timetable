@@ -27,7 +27,6 @@ class JsonWriter:
             logger.info(f"Backup created: {backup_file_path}")
         except Exception as e:
             logger.error(f"Error creating backup: {e}")
-            raise e
 
     def clear_json(self, file_path: str,
                    logger: logging.Logger = None,
