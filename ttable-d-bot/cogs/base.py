@@ -7,8 +7,11 @@ import re
 from time import perf_counter_ns
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
+
 from api.timetable_api_calls import CourseTimetable
 from api.TTableInputs import TTableInputs
+
+from json_h.read import clear_json, extract_from_json
 
 log_format = "[%(asctime)s] [%(levelname)-8s] %(name)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=log_format)
@@ -131,37 +134,20 @@ class BaseCog(commands.Cog):
                       help="Clear the cache")
     @commands.check(is_allowed_account)
     async def clear_cache_command(self, ctx):
-        self.clear_json("cache")
+        clear_json(logger, self.paths["cache"])
         await ctx.send(f"`{os.path.basename(self.paths["cache"])}` cleared")
 
-    def clear_json(self, path_key: str):
-        with open(self.paths[path_key], "w") as file:
-            json.dump({}, file)
-        logger.info(f"{os.path.basename(self.paths[path_key])} cleared/reset.")
-
-    def extract_from_json(self, path_key: str):
-        try:
-            with open(self.paths[path_key], "r") as file:
-                data = json.load(file)
-            return data
-        except json.JSONDecodeError as e:
-            logger.error(f"Error decoding JSON: {e}")
-        except FileNotFoundError as e:
-            logger.error(f"{os.path.basename(self.paths[path_key])} DNE: {e}")
-        self.clear_json(path_key)
-        return {}
-
-    # SHOULD NOT BE 1 MINUTE IN FINAL, JUST FOR TESTING!!!!
+    # 1 MINUTE FOR TESTING - 24 HOURS FOR FINAL (as a minimum)
     @tasks.loop(minutes=1)
     async def check_cache(self):
-        admin_data = self.extract_from_json("admin")
+        admin_data = extract_from_json(logger, self.paths["admin"])
 
         if ("last-check-date" not in admin_data or
                 datetime.now() - datetime.fromisoformat(admin_data.get(
                     "last-check-date")) >= timedelta(
                     days=1)):
             logger.info("Checking cache...")
-            cache_data = self.extract_from_json("cache")
+            cache_data = extract_from_json(logger, self.paths["cache"])
 
             for key, value in cache_data.items():
                 if ("request-date" not in value or
@@ -204,7 +190,7 @@ class BaseCog(commands.Cog):
         return "\n".join(message)
 
     def get_course_activities(self, course: str, semester: str, campus: str):
-        data = self.extract_from_json("cache")
+        data = extract_from_json(logger, self.paths["cache"])
 
         course_key = f"{course}-{semester}-{campus}"
 
