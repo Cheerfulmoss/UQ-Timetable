@@ -31,13 +31,17 @@ class UQTimetableBot(commands.Bot):
 
     async def load_cogs(self) -> None:
         for filename in os.listdir("./cogs"):
-            if filename.endswith(".py"):
-                await self.load_extension(f"cogs.{filename[:-3]}")
+            if (filename.endswith(PY_FILE_EXTENSION) and
+                    filename.startswith(COG_PRE)):
+                await self.load_extension(
+                    f"cogs.{filename[:-len(PY_FILE_EXTENSION)]}")
 
     async def reload_cogs(self) -> None:
         for filename in os.listdir("./cogs"):
-            if filename.endswith(".py"):
-                await self.reload_extension(f"cogs.{filename[:-3]}")
+            if (filename.endswith(PY_FILE_EXTENSION) and
+                    filename.startswith(COG_PRE)):
+                await self.reload_extension(
+                    f"cogs.{filename[:-len(PY_FILE_EXTENSION)]}")
 
 
 if __name__ == "__main__":
