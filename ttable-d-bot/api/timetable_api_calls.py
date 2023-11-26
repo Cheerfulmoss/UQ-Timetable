@@ -207,7 +207,7 @@ class CourseTimetable:
             self._linker()
 
     def _linker(self):
-        """Finds grouped activities, inneficiently :), and writes them to
+        """Finds grouped activities, inefficiently :), and writes them to
         `self.activities`
         """
         for i, (main_key, main_value) in enumerate(self.activities.items()):
@@ -322,14 +322,68 @@ class CourseTimetable:
                )
         ]
 
+    @staticmethod
+    def _get_shorter_schedule(first_act: dict[str, any],
+                              second_act: dict[str, any]):
+        if len(first_act.get("schedule")) <= len(second_act.get("schedule")):
+            return first_act, second_act
+        else:
+            return second_act, first_act
 
-################################################################################
-if __name__ == "__main__":
-    course_obj = CourseTimetable("CSSE2010",
-                                 semester=TTableInputs.Semester.S2,
-                                 campus_id=TTableInputs.Campus.STLUC)
+    @staticmethod
+    def is_time_between(check_time, start_time, end_time):
+        check_datetime = dt.datetime.combine(dt.datetime.today(), check_time)
+        start_datetime = dt.datetime.combine(dt.datetime.today(), start_time)
+        end_datetime = dt.datetime.combine(dt.datetime.today(), end_time)
+        return start_datetime <= check_datetime <= end_datetime
 
-    print(course_obj.get_course_list())
-    print(course_obj.get_activities())
-    print(course_obj.get_lectures())
-    print(course_obj.get_uncategorised())
+    def get_overlap(self, first_course,
+                    first_act: tuple[str, str],
+                    second_course,
+                    second_act: tuple[str, str]) -> bool:
+        """Checks if two course activities overlap.
+
+        :param first_course: No order, the first course you want to check.
+            :type first_course: CourseTimetable.
+        :param first_act: The code for the activity to check overlap for in
+            'first_course`.
+            :type first_act: Tuple[str, str].
+        :param second_course: The second course you want to check.
+            :type second_course: CourseTimetable.
+        :param second_act: The code for the activity to check overlap for in
+            `second_course`.
+            :type second_act: Tuple[str, str].
+        :return:
+        """
+        act1 = first_course.get_activities().get(first_act)
+        act2 = second_course.get_activities().get(second_act)
+
+        if act1 is None and act2 is None:
+            raise ValueError("One or both activities is not found within the"
+                             f"course, {self.course=}, {first_act=}, "
+                             f"{second_act=}")
+
+        act1, act2 = self._get_shorter_schedule(act1, act2)
+        act1_schedule, act2_schedule = (act1.get("schedule"),
+                                        act2.get("schedule"))
+
+        for i in range(len(act1_schedule)):
+            if act1_schedule[i] == act2_schedule[i]:
+                act1_start, act1_end = (
+                    dt.datetime.strptime(act1.get("start-time"),
+                                         "%H:%M").time(),
+                    dt.datetime.strptime(act1.get("end-time"),
+                                         "%H:%M").time()
+                )
+
+                act2_start, act2_end = (
+                    dt.datetime.strptime(act2.get("start-time"),
+                                         "%H:%M").time(),
+                    dt.datetime.strptime(act2.get("end-time"),
+                                         "%H:%M").time()
+                )
+
+                if (self.is_time_between(act2_start, act1_start, act1_end) or
+                        self.is_time_between(act2_end, act1_start, act1_end)):
+                    return True
+        return False
