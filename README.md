@@ -15,7 +15,7 @@ Make sure you have the following prerequisites installed:
 - [Discord.py library](https://discordpy.readthedocs.io/en/stable/) - v2.3.2
   - Install using: `pip install discord.py`
 
-For a list of required libraries, see [libraries.md](libraries.md). To install see [config/requirements.txt](requirements.txt).
+For a list of required libraries, see [libraries.md](libraries.md). To install see [requirements.txt](config/requirements.txt).
 
 ## Setup Instructions
 
