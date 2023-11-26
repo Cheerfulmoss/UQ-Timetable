@@ -2,6 +2,7 @@ import logging
 import json
 import os
 
+from constants.common import *
 from .write import JsonWriter as jw
 
 
@@ -13,6 +14,8 @@ class JsonReader:
         This class provides methods for reading JSON files, including error
         handling and clearing content with the help of JsonWriter.
         """
+        logging.basicConfig(level=logging.INFO,
+                            format=LOG_FORMAT)
         self._default_logger = logging.getLogger(__name__)
 
     def extract_from_json_cache(self, file_path: str,
