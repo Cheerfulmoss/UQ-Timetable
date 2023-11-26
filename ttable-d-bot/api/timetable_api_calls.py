@@ -67,9 +67,6 @@ class CourseTimetable:
 
         self.reformat_course_data()
 
-        self.activities = {}
-        self.set_activities()
-
     @staticmethod
     def _input_validation(
             semester: TTableInputs.Semester = None,
@@ -154,24 +151,12 @@ class CourseTimetable:
         }
         return requests.post(TIMETABLE_API_URL, data=data).json()
 
-    def set_activities(self) -> None:
-        """Filters returned activities for information we care about.
-
-        This will probably have to change in the future to be a situation
-        where it actually filters nothing but for now there's stuff from the
-        api call that we don't need.
-
-        :rtype: None
-        """
-        self.activities.clear()
-        self.activities = self.course.get("activities")
-
     def _linker(self) -> None:
         """Finds grouped activities, inefficiently :), and writes them to
         `self.activities`
         """
         for i, (main_key, main_value) in (
-                enumerate(self.course.get("activities").items())):
+                enumerate(self.get_activities().items())):
             main_key = main_key.split("-")
             # -P signals that the activity should have a pair (for
             # generality I assume group, so more than 2, but I haven't seen
@@ -179,7 +164,7 @@ class CourseTimetable:
             if "-P" not in main_key[2]:
                 continue
 
-            for j, pair_key in enumerate(self.course.get("activities")):
+            for j, pair_key in enumerate(self.get_activities()):
                 pair_key = pair_key.split("-")
                 if (
                         i == j or
@@ -199,7 +184,7 @@ class CourseTimetable:
 
     def get_activities(self) -> dict:
         """Activities refers to Lectures, Tutorials, etc."""
-        return self.activities
+        return self.course.get("activities")
 
     def filter_activities(self,
                           activity_types: list[TTableInputs.ActivityTypes] |
@@ -360,7 +345,7 @@ class CourseTimetable:
         linker = False
         new_activities = {
             activity.replace("_", "-"): data
-            for activity, data in self.course.get("activities").items()
+            for activity, data in self.get_activities().items()
         }
 
         for activity, activity_data in new_activities.items():
