@@ -1,6 +1,6 @@
 """
 Written: Oliver Sparrow
-Extended: Alexander Burow
+Edited: Alexander Burow
 
 License: GPL3
 """
@@ -10,14 +10,13 @@ import logging
 import datetime as dt
 from .TTableInputs import TTableInputs
 
+from constants.common import *
+from constants.api import *
+
 ################################################################################
 
-## CONSTANTS
-TIMETABLE_API_URL = "https://timetable.my.uq.edu.au/odd/rest/timetable/subjects"
-DATETIME_FORMAT = "%H:%M"
-
 logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
+                    format=LOG_FORMAT)
 logger = logging.getLogger(__name__)
 
 
@@ -360,7 +359,7 @@ class CourseTimetable:
             raise ValueError("One or both courses are not of type "
                              f"CourseTimetable, {type(first_course)=}, "
                              f"{type(second_course)=}")
-        
+
         act1 = first_course.get_activities().get(first_act)
         act2 = second_course.get_activities().get(second_act)
 
