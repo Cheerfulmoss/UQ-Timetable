@@ -39,6 +39,11 @@ The project adheres to the following organized folder structure:
 │   ├── cogs
 │   │   ├── base.py
 │   │   └── helpCommand.py
+│   ├── constants
+│   │   ├── __init__.py
+│   │   ├── api.py
+│   │   ├── cogs.py
+│   │   └── common.py
     └── json_h
         ├── __init__.py
         ├── read.py
