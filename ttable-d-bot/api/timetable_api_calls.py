@@ -355,6 +355,12 @@ class CourseTimetable:
             :type second_act: Tuple[str, str].
         :return:
         """
+        if not (isinstance(first_course, CourseTimetable) or
+                isinstance(second_course, CourseTimetable)):
+            raise ValueError("One or both courses are not of type "
+                             f"CourseTimetable, {type(first_course)=}, "
+                             f"{type(second_course)=}")
+        
         act1 = first_course.get_activities().get(first_act)
         act2 = second_course.get_activities().get(second_act)
 
