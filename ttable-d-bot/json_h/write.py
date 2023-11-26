@@ -12,6 +12,8 @@ class JsonWriter:
         This class provides methods for managing JSON files, including
         creating backups and clearing content.
         """
+        logging.basicConfig(level=logging.INFO,
+                            format=LOG_FORMAT)
         self._default_logger = logging.getLogger(__name__)
 
     def backup_json(self, file_path: str, backup_folder: str = "backup",
