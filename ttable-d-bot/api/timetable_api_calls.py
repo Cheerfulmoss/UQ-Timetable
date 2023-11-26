@@ -195,7 +195,7 @@ class CourseTimetable:
                 "colour": activity_info.get("color"),
                 "department": activity_info.get("department"),
                 "group": list(),
-                "intervals": activity_duration / 30,  # Length of the course
+                "intervals": activity_duration / 15,  # Length of the course
                 # in 30 min intervals
                 # Warning: The following two entries can be
                 #   EXTREMELY nonsensical!!! Use with caution...
