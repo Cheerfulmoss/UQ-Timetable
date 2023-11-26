@@ -1,3 +1,10 @@
+"""
+Written: Oliver Sparrow
+
+Original version of the API tool, for posterity :)
+
+License: GPL3
+"""
 
 import requests
 import datetime as dt
