@@ -146,25 +146,38 @@ class BaseCog(commands.Cog):
         admin_data = jr().extract_from_json_cache(self.paths["admin"],
                                                   logger=logger)
 
-        if ("last-check-date" not in admin_data or
-                datetime.now() - datetime.fromisoformat(admin_data.get(
+        file_size_gb = os.path.getsize(self.paths["cache"]) / (1024 ** 3)
+        if file_size_gb > CACHE_MAX_SIZE:
+            logger.info("Cache size is greater than threshold, "
+                        f"{file_size_gb} GB > {CACHE_MAX_SIZE} GB, "
+                        "clearing cache...")
+            jw().clear_json(self.paths["cache"], logger=logger)
+            logger.info("Cache check complete.")
+            return
+
+        check_date = datetime.now()
+        if (not admin_data.get("last-check-date") or
+                check_date - datetime.fromisoformat(admin_data.get(
                     "last-check-date")) >= timedelta(
                     days=1)):
             logger.info("Checking cache...")
             cache_data = jr().extract_from_json_cache(self.paths["cache"],
                                                       logger=logger)
 
+            items_to_remove = []
             for key, value in cache_data.items():
-                if ("request-date" not in value or
-                        datetime.now() - datetime.fromisoformat(value.get(
+                if (not value.get("request-date") or
+                        check_date - datetime.fromisoformat(value.get(
                             "request-date")) >= timedelta(
                             days=7)):
-                    logger.info(f"Cache data for {key} removed.")
-                    cache_data.pop(key)
+                    items_to_remove.append(key)
+            for item in items_to_remove:
+                cache_data.pop(item)
+                logger.info(f"Cache data for {item} removed.")
 
             jw().write(self.paths["cache"], cache_data, logger=logger)
 
-            admin_data["last-check-date"] = datetime.now().isoformat()
+            admin_data["last-check-date"] = check_date.isoformat()
             jw().write(self.paths["admin"], admin_data, logger=logger)
 
             logger.info("Cache check complete.")
