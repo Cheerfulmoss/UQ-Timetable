@@ -1,6 +1,6 @@
 """
 Written: Oliver Sparrow
-Edited: Alexander Burow
+Extended: Alexander Burow
 
 License: GPL3
 """
