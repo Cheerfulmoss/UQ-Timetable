@@ -153,8 +153,8 @@ class BaseCog(commands.Cog):
                         "clearing cache...")
             jw().clear_json(self.paths["cache"],
                             logger=logger,
-                            backup=not (file_size_gb >
-                                        (CACHE_MAX_SIZE * CACHE_MAX_SIZE_MULT)))
+                            backup=(file_size_gb <
+                                    CACHE_MAX_SIZE * CACHE_MAX_SIZE_MULT))
             logger.info("Cache check complete.")
             return
 
