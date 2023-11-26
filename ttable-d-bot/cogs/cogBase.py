@@ -182,7 +182,8 @@ class BaseCog(commands.Cog):
                 cache_data.pop(item)
                 logger.info(f"Cache data for {item} removed.")
 
-            jw().write(self.paths["cache"], cache_data, logger=logger)
+            jw().write(self.paths["cache"], cache_data, logger=logger,
+                       backup=False)
 
             admin_data["last-check-date"] = check_date.isoformat()
             jw().write(self.paths["admin"], admin_data, logger=logger)
@@ -244,7 +245,7 @@ class BaseCog(commands.Cog):
             "request-date": datetime.now().isoformat()
         }
 
-        jw().write(self.paths["cache"], cache_data, logger=logger)
+        jw().write(self.paths["cache"], cache_data, logger=logger, backup=False)
         return course_obj.get_activities()
 
     @staticmethod
