@@ -151,7 +151,10 @@ class BaseCog(commands.Cog):
             logger.info("Cache size is greater than threshold, "
                         f"{file_size_gb} GB > {CACHE_MAX_SIZE} GB, "
                         "clearing cache...")
-            jw().clear_json(self.paths["cache"], logger=logger)
+            jw().clear_json(self.paths["cache"],
+                            logger=logger,
+                            backup=not (file_size_gb >
+                                        (CACHE_MAX_SIZE * CACHE_MAX_SIZE_MULT)))
             logger.info("Cache check complete.")
             return
 
