@@ -31,12 +31,18 @@ The project adheres to the following organized folder structure:
 │   │   ├── TTableInputs.py
 │   │   ├── __init__.py
 │   │   └── timetable_api_calls.py
+│   ├── backup
+│   │   └── api-calls-cache.json.bak
 │   ├── base-files
 │   │   ├── admin.json
 │   │   └── api-calls-cache.json
-    └── cogs
-        ├── base.py
-        └── helpCommand.py
+│   ├── cogs
+│   │   ├── base.py
+│   │   └── helpCommand.py
+    └── json_h
+        ├── __init__.py
+        ├── read.py
+        └── write.py
 ```
 In this structure:
 
