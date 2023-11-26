@@ -3,6 +3,8 @@ import json
 import os
 import shutil
 
+from constants.common import *
+
 
 class JsonWriter:
     def __init__(self):
