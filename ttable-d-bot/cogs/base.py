@@ -13,24 +13,24 @@ from api.TTableInputs import TTableInputs
 from json_h.read import JsonReader as jr
 from json_h.write import JsonWriter as jw
 
-log_format = "[%(asctime)s] [%(levelname)-8s] %(name)s: %(message)s"
-logging.basicConfig(level=logging.INFO, format=log_format)
-logger = logging.getLogger(__name__)
+from constants.cogs import *
+from constants.common import *
 
-allowed_accounts = [398437778788188163]
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+logger = logging.getLogger(__name__)
 
 
 def is_allowed_account(ctx):
-    return ctx.author.id in allowed_accounts
+    return ctx.author.id in ALLOWED_ACCOUNTS
 
 
 class BaseCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        base_files_path = os.path.join(os.getcwd(), "base-files")
-        cache_path = os.path.join(base_files_path, "api-calls-cache.json")
-        admin_path = os.path.join(base_files_path, "admin.json")
+        base_files_path = os.path.join(os.getcwd(), BASE_FILES_DIR)
+        cache_path = os.path.join(base_files_path, API_CACHE_NAME)
+        admin_path = os.path.join(base_files_path, ADMIN_STORE_NAME)
 
         self.paths = {"cache": cache_path,
                       "admin": admin_path}
