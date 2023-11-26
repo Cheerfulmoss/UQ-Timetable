@@ -70,3 +70,28 @@ class JsonWriter:
 
         logger = logger or self._default_logger
         logger.info(f"{os.path.basename(file_path)} cleared/reset.")
+
+    def write(self, file_path: str, data: dict,
+              logger: logging.Logger = None,
+              backup: bool = True) -> None:
+        """Write to a json file.
+
+        :param file_path: The path to the JSON file.
+            :type file_path: str.
+        :param data: The data to write to the json file.
+            :type data: dict.
+        :param logger: (Optional) The logger to use. If not provided, the
+            default logger is used.
+            :type logger: logging.Logger or None.
+        :param backup: (Optional) Whether to create a backup before clearing.
+            Defaults to True.
+            :type backup: bool.
+        """
+        logger = logger or self._default_logger
+
+        if backup:
+            self.backup_json(file_path, logger=logger)
+
+        with open(file_path, "w") as file:
+            json.dump(data, file)
+        logger.info(f"Written data to {os.path.basename(file_path)}.")
