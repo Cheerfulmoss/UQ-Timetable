@@ -65,6 +65,8 @@ class CourseTimetable:
                     self.course = self.course_versions[version]
                     break
 
+        self.reformat_course_data()
+
         self.activities = {}
         self.set_activities()
 
@@ -162,70 +164,31 @@ class CourseTimetable:
         :rtype: None
         """
         self.activities.clear()
-        linker = False
+        self.activities = self.course.get("activities")
 
-        for activity, activity_info in self.course["activities"].items():
-            activity_code = (activity_info.get("activity_group_code"),
-                             activity_info.get("activity_code"))
-
-            # Set a flag if activities need to be taken in pairs
-            if not linker and "-P" in activity_code[1]:
-                linker = True
-
-            start_time = dt.datetime.strptime(
-                activity_info.get("start_time"),
-                DATETIME_FORMAT
-            )
-
-            activity_duration = int(activity_info.get("duration"))
-
-            end_time = start_time + dt.timedelta(
-                minutes=activity_duration
-            )
-
-            self.activities[activity_code] = {
-                "activity_code": activity_code,
-                "activity": activity_info.get("activity_type"),
-                "day": activity_info.get("day_of_week"),
-                "location": activity_info.get("location"),
-                "start-time": start_time.strftime(DATETIME_FORMAT),
-                "end-time": end_time.strftime(DATETIME_FORMAT),
-                "schedule": activity_info.get("activitiesDays"),
-                "colour": activity_info.get("color"),
-                "department": activity_info.get("department"),
-                "group": list(),
-                "intervals": activity_duration / 15,  # Length of the course
-                # in 30 min intervals
-                # Warning: The following two entries can be
-                #   EXTREMELY nonsensical!!! Use with caution...
-                "is_open": activity_info.get("selectable"),
-                "spots": activity_info.get("availability"),
-            }
-
-        if linker:
-            self._linker()
-
-    def _linker(self):
+    def _linker(self) -> None:
         """Finds grouped activities, inefficiently :), and writes them to
         `self.activities`
         """
-        for i, (main_key, main_value) in enumerate(self.activities.items()):
-
+        for i, (main_key, main_value) in (
+                enumerate(self.course.get("activities").items())):
+            main_key = main_key.split("-")
             # -P signals that the activity should have a pair (for
             # generality I assume group, so more than 2, but I haven't seen
             # that yet.
-            if "-P" not in main_key[1]:
+            if "-P" not in main_key[2]:
                 continue
 
-            for j, pair_key in enumerate(self.activities):
+            for j, pair_key in enumerate(self.course.get("activities")):
+                pair_key = pair_key.split("-")
                 if (
                         i == j or
-                        "-P" not in pair_key[1] or
-                        main_key[0] != pair_key[0]
+                        "-P" not in pair_key[2] or
+                        main_key[1] != pair_key[1]
                 ):
                     continue
 
-                if main_key[1][:-1] == pair_key[1][:-1]:
+                if main_key[2][:-1] == pair_key[2][:-1]:
                     main_value["group"].append(pair_key)
 
     def get_course_list(self) -> list[str]:
@@ -376,19 +339,73 @@ class CourseTimetable:
             if act1_schedule[i] == act2_schedule[i]:
                 act1_start, act1_end = (
                     dt.datetime.strptime(act1.get("start-time"),
-                                         "%H:%M").time(),
+                                         DATETIME_FORMAT).time(),
                     dt.datetime.strptime(act1.get("end-time"),
-                                         "%H:%M").time()
+                                         DATETIME_FORMAT).time()
                 )
 
                 act2_start, act2_end = (
                     dt.datetime.strptime(act2.get("start-time"),
-                                         "%H:%M").time(),
+                                         DATETIME_FORMAT).time(),
                     dt.datetime.strptime(act2.get("end-time"),
-                                         "%H:%M").time()
+                                         DATETIME_FORMAT).time()
                 )
 
                 if (self.is_time_between(act2_start, act1_start, act1_end) or
                         self.is_time_between(act2_end, act1_start, act1_end)):
                     return True
         return False
+
+    def reformat_course_data(self):
+        linker = False
+        new_activities = {
+            activity.replace("_", "-"): data
+            for activity, data in self.course.get("activities").items()
+        }
+
+        for activity, activity_data in new_activities.items():
+            key_remaps = {}
+            key_remaps.update(KEY_MAPPINGS)
+
+            for key in activity_data:
+                if key not in key_remaps and "_" in key:
+                    key_remaps[key] = key.replace("_", "-")
+            for key in key_remaps:
+                activity_data[key_remaps[key]] = activity_data[key]
+                activity_data.pop(key)
+
+            start_time = dt.datetime.strptime(
+                activity_data.get("start-time"),
+                DATETIME_FORMAT
+            )
+
+            end_time = start_time + dt.timedelta(
+                minutes=int(activity_data.get("duration"))
+            )
+
+            # Setting computed values not given by the API.
+            activity_data["start-time"] = start_time.strftime(DATETIME_FORMAT)
+            activity_data["end-time"] = end_time.strftime(DATETIME_FORMAT)
+            activity_data["group"] = []
+            activity_data["subject-code"] = activity_data[
+                "subject-code"].replace("_", "-")
+
+            # Flag to see if the linker needs to be used for this course.
+            if not linker and "-P" in activity[2]:
+                linker = True
+
+        key_remaps = {}
+        for course_key in self.course:
+            if course_key not in key_remaps and "_" in course_key:
+                key_remaps[course_key] = course_key.replace("_", "-")
+
+        for key in key_remaps:
+            self.course[key_remaps[key]] = self.course[key]
+            self.course.pop(key)
+
+        self.course["activities"] = new_activities
+        self.course["subject-code"] = self.course[
+            "subject-code"].replace("_", "-")
+
+        if linker:
+            self._linker()
