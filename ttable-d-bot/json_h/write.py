@@ -98,4 +98,4 @@ class JsonWriter:
 
         with open(file_path, "w") as file:
             json.dump(data, file)
-        logger.info(f"Written data to {os.path.basename(file_path)}.")
+        logger.debug(f"Written data to {os.path.basename(file_path)}.")
