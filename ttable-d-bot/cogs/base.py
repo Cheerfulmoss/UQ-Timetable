@@ -1,6 +1,5 @@
 import discord
 import logging
-import json
 import os
 import re
 
@@ -28,8 +27,10 @@ def is_allowed_account(ctx):
 class BaseCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        cache_path = f"{os.getcwd()}/base-files/api-calls-cache.json"
-        admin_path = f"{os.getcwd()}/base-files/admin.json"
+
+        base_files_path = os.path.join(os.getcwd(), "base-files")
+        cache_path = os.path.join(base_files_path, "api-calls-cache.json")
+        admin_path = os.path.join(base_files_path, "admin.json")
 
         self.paths = {"cache": cache_path,
                       "admin": admin_path}
