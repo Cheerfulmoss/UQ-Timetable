@@ -1,8 +1,10 @@
 from enum import Enum
 import logging
+from constants.common import *
+
 
 logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
+                    format=LOG_FORMAT)
 logger = logging.getLogger(__name__)
 
 
