@@ -1,0 +1,1 @@
+LOG_FORMAT = "[%(asctime)s] [%(levelname)-8s] %(name)s: %(message)s"
