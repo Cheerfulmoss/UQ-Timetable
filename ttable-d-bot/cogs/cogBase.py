@@ -228,7 +228,7 @@ class BaseCog(commands.Cog):
 
             date_difference = now - request_date
             if date_difference < timedelta(days=7):
-                return cache_data[course_key]["course-activities"]
+                return cache_data[course_key]["course"]["activities"]
 
         start = perf_counter_ns()
         course_obj = self.get_course_obj(course, semester, campus)
@@ -239,17 +239,13 @@ class BaseCog(commands.Cog):
             logger.warning("API call took longer than "
                            f"{API_CALL_TIME_WARN} ms, {duration} ms")
 
-        activities = course_obj.get_activities()
-        fixed_activities = {" ".join(key): value
-                            for key, value in activities.items()}
-
         cache_data[course_key] = {
-            "course-activities": fixed_activities,
+            "course": course_obj.get_course(),
             "request-date": datetime.now().isoformat()
         }
 
         jw().write(self.paths["cache"], cache_data, logger=logger)
-        return fixed_activities
+        return course_obj.get_activities()
 
     @staticmethod
     def get_course_obj(course: str, semester: str, campus: str):
