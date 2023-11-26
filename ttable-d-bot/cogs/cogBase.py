@@ -138,7 +138,11 @@ class BaseCog(commands.Cog):
     @commands.check(is_allowed_account)
     async def clear_cache_command(self, ctx):
         jw().clear_json(self.paths["cache"], logger=logger)
-        await ctx.send(f"`{os.path.basename(self.paths["cache"])}` cleared")
+        embed = discord.Embed(
+            title=f"`{os.path.basename(self.paths["cache"])}` cleared",
+            colour=discord.Colour.green()
+        )
+        await ctx.send(embed=embed)
 
     # 1 MINUTE FOR TESTING - 24 HOURS FOR FINAL (as a minimum)
     @tasks.loop(minutes=1)
