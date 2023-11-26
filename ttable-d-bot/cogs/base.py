@@ -28,10 +28,11 @@ def is_allowed_account(ctx):
 class BaseCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.cache_path = f"{os.getcwd()}/base-files/api-calls-cache.json"
-        self.admin_path = f"{os.getcwd()}/base-files/admin.json"
+        cache_path = f"{os.getcwd()}/base-files/api-calls-cache.json"
+        admin_path = f"{os.getcwd()}/base-files/admin.json"
 
-        self.paths = {"cache": self.cache_path, "admin": self.admin_path}
+        self.paths = {"cache": cache_path,
+                      "admin": admin_path}
 
         self.default_act_cats = [
             "activity", "day", "location", "start-time", "end-time",
@@ -160,12 +161,11 @@ class BaseCog(commands.Cog):
                     logger.info(f"Cache data for {key} removed.")
                     cache_data.pop(key)
 
-            with open(self.cache_path, "w") as file:
-                json.dump(cache_data, file)
+            jw().write(self.paths["cache"], cache_data, logger=logger)
 
-            with open(self.admin_path, "w") as file:
-                admin_data["last-check-date"] = datetime.now().isoformat()
-                json.dump(admin_data, file)
+            admin_data["last-check-date"] = datetime.now().isoformat()
+            jw().write(self.paths["admin"], admin_data, logger=logger)
+
             logger.info("Cache check complete.")
 
     def format_activity_data(self, data, optional):
@@ -193,20 +193,21 @@ class BaseCog(commands.Cog):
         return "\n".join(message)
 
     def get_course_activities(self, course: str, semester: str, campus: str):
-        data = jr().extract_from_json_cache(self.paths["cache"],
-                                            logger=logger)
+        cache_data = jr().extract_from_json_cache(self.paths["cache"],
+                                                  logger=logger)
 
         course_key = f"{course}-{semester}-{campus}"
 
-        if course_key in data and "request-date" in data[course_key]:
+        if (course_key in cache_data and
+                "request-date" in cache_data[course_key]):
             request_date = datetime.fromisoformat(
-                data[course_key]["request-date"]
+                cache_data[course_key]["request-date"]
             )
             now = datetime.now()
 
             date_difference = now - request_date
             if date_difference < timedelta(days=7):
-                return data[course_key]["course-activities"]
+                return cache_data[course_key]["course-activities"]
 
         start = perf_counter_ns()
         course_obj = self.get_course_obj(course, semester, campus)
@@ -217,12 +218,12 @@ class BaseCog(commands.Cog):
         fixed_activities = {" ".join(key): value
                             for key, value in activities.items()}
 
-        data[course_key] = {
+        cache_data[course_key] = {
             "course-activities": fixed_activities,
             "request-date": datetime.now().isoformat()
         }
-        with open(self.cache_path, "w") as file:
-            json.dump(data, file)
+
+        jw().write(self.paths["cache"], cache_data, logger=logger)
         return fixed_activities
 
     @staticmethod
