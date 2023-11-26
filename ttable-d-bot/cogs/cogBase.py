@@ -229,7 +229,11 @@ class BaseCog(commands.Cog):
         start = perf_counter_ns()
         course_obj = self.get_course_obj(course, semester, campus)
         duration = round((perf_counter_ns() - start) / 1000000, 5)
-        logger.info(f"API call made, {duration} ms.")
+        if duration < 5000:
+            logger.debug(f"API call made, {duration} ms.")
+        else:
+            logger.warning("API call took longer than "
+                           f"{API_CALL_TIME_WARN} ms, {duration} ms")
 
         activities = course_obj.get_activities()
         fixed_activities = {" ".join(key): value
