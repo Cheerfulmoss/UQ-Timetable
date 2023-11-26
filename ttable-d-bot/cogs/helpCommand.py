@@ -2,8 +2,9 @@ from discord.ext import commands
 import discord
 import logging
 
-log_format = "[%(asctime)s] [%(levelname)-8s] %(name)s: %(message)s"
-logging.basicConfig(level=logging.INFO, format=log_format)
+from constants.common import *
+
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 logger = logging.getLogger(__name__)
 
 
