@@ -157,7 +157,7 @@ class CourseTimetable:
         """
         for i, (main_key, main_value) in (
                 enumerate(self.get_activities().items())):
-            main_key = main_key.split("-")
+            main_key = main_key.split("|")
             # -P signals that the activity should have a pair (for
             # generality I assume group, so more than 2, but I haven't seen
             # that yet.
@@ -165,7 +165,7 @@ class CourseTimetable:
                 continue
 
             for j, pair_key in enumerate(self.get_activities()):
-                pair_key = pair_key.split("-")
+                pair_key = pair_key.split("|")
                 if (
                         i == j or
                         "-P" not in pair_key[2] or
@@ -174,7 +174,7 @@ class CourseTimetable:
                     continue
 
                 if main_key[2][:-1] == pair_key[2][:-1]:
-                    main_value["group"].append(pair_key)
+                    main_value["group"].append("|".join(pair_key))
 
     def get_course_list(self) -> list[str]:
         return list(self.course_versions)
@@ -376,7 +376,7 @@ class CourseTimetable:
                 "subject-code"].replace("_", "-")
 
             # Flag to see if the linker needs to be used for this course.
-            if not linker and "-P" in activity[2]:
+            if not linker and "-P" in activity.split("|")[2]:
                 linker = True
 
         key_remaps = {}
