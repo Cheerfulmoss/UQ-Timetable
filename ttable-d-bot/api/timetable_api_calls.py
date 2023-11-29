@@ -140,7 +140,7 @@ class CourseTimetable:
         :rtype: dict
         """
         data = {
-            "search-term": course,
+            "search_term": course,
             "semester": semester.value,
             "campus": campus_id.value,
             "faculty": "ALL",
