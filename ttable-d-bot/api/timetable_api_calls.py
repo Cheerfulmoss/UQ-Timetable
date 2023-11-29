@@ -146,8 +146,8 @@ class CourseTimetable:
             "faculty": "ALL",
             "type": "ALL",
             "days": [1, 2, 3, 4, 5, 6, 0],
-            "start-time": "00:00",
-            "end-time": "23:59"
+            "start_time": "00:00",
+            "end_time": "23:59"
         }
         return requests.post(TIMETABLE_API_URL, data=data).json()
 
@@ -323,16 +323,16 @@ class CourseTimetable:
         for i in range(len(act1_schedule)):
             if act1_schedule[i] == act2_schedule[i]:
                 act1_start, act1_end = (
-                    dt.datetime.strptime(act1.get("start-time"),
+                    dt.datetime.strptime(act1.get("start_time"),
                                          DATETIME_FORMAT).time(),
-                    dt.datetime.strptime(act1.get("end-time"),
+                    dt.datetime.strptime(act1.get("end_time"),
                                          DATETIME_FORMAT).time()
                 )
 
                 act2_start, act2_end = (
-                    dt.datetime.strptime(act2.get("start-time"),
+                    dt.datetime.strptime(act2.get("start_time"),
                                          DATETIME_FORMAT).time(),
-                    dt.datetime.strptime(act2.get("end-time"),
+                    dt.datetime.strptime(act2.get("end_time"),
                                          DATETIME_FORMAT).time()
                 )
 
@@ -344,23 +344,17 @@ class CourseTimetable:
     def reformat_course_data(self):
         linker = False
         new_activities = {
-            activity.replace("_", "-"): data
+            activity: data
             for activity, data in self.get_activities().items()
         }
 
         for activity, activity_data in new_activities.items():
-            key_remaps = {}
-            key_remaps.update(KEY_MAPPINGS)
-
-            for key in activity_data:
-                if key not in key_remaps and "_" in key:
-                    key_remaps[key] = key.replace("_", "-")
-            for key in key_remaps:
-                activity_data[key_remaps[key]] = activity_data[key]
+            for key in KEY_MAPPINGS:
+                activity_data[KEY_MAPPINGS[key]] = activity_data[key]
                 activity_data.pop(key)
 
             start_time = dt.datetime.strptime(
-                activity_data.get("start-time"),
+                activity_data.get("start_time"),
                 DATETIME_FORMAT
             )
 
@@ -369,28 +363,15 @@ class CourseTimetable:
             )
 
             # Setting computed values not given by the API.
-            activity_data["start-time"] = start_time.strftime(DATETIME_FORMAT)
-            activity_data["end-time"] = end_time.strftime(DATETIME_FORMAT)
+            activity_data["start_time"] = start_time.strftime(DATETIME_FORMAT)
+            activity_data["end_time"] = end_time.strftime(DATETIME_FORMAT)
             activity_data["group"] = []
-            activity_data["subject-code"] = activity_data[
-                "subject-code"].replace("_", "-")
 
             # Flag to see if the linker needs to be used for this course.
             if not linker and "-P" in activity.split("|")[2]:
                 linker = True
 
-        key_remaps = {}
-        for course_key in self.course:
-            if course_key not in key_remaps and "_" in course_key:
-                key_remaps[course_key] = course_key.replace("_", "-")
-
-        for key in key_remaps:
-            self.course[key_remaps[key]] = self.course[key]
-            self.course.pop(key)
-
         self.course["activities"] = new_activities
-        self.course["subject-code"] = self.course[
-            "subject-code"].replace("_", "-")
 
         if linker:
             self._linker()
