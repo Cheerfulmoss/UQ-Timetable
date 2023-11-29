@@ -5,6 +5,6 @@ KEY_MAPPINGS = {
     "day_of_week": "day",
     "activitiesDays": "schedule",
     "color": "colour",
-    "selectable": "is-open",
+    "selectable": "is_open",
     "availability": "spots",
 }

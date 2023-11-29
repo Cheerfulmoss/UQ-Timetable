@@ -36,7 +36,7 @@ class BaseCog(commands.Cog):
                       "admin": admin_path}
 
         self.default_act_cats = [
-            "activity", "day", "location", "start-time", "end-time",
+            "activity", "day", "location", "start_time", "end_time",
             "department", "group",
         ]
 
@@ -88,7 +88,7 @@ class BaseCog(commands.Cog):
         chunked_acts = [dict((key, course_activities[key]) for key in chunk) for
                         chunk in chunked_keys]
 
-        course_key = f"{course}-{semester}-{campus}"
+        course_key = f"{course}_{semester}_{campus}"
 
         for index, chunk in enumerate(chunked_acts):
             activities_embed = discord.Embed(
@@ -163,9 +163,9 @@ class BaseCog(commands.Cog):
             return
 
         check_date = datetime.now()
-        if (not admin_data.get("last-check-date") or
+        if (not admin_data.get("last_check_date") or
                 check_date - datetime.fromisoformat(admin_data.get(
-                    "last-check-date")) >= timedelta(
+                    "last_check_date")) >= timedelta(
                     days=1)):
             logger.info("Checking cache...")
             cache_data = jr().extract_from_json_cache(self.paths["cache"],
@@ -173,9 +173,9 @@ class BaseCog(commands.Cog):
 
             items_to_remove = []
             for key, value in cache_data.items():
-                if (not value.get("request-date") or
+                if (not value.get("request_date") or
                         check_date - datetime.fromisoformat(value.get(
-                            "request-date")) >= timedelta(
+                            "request_date")) >= timedelta(
                             days=7)):
                     items_to_remove.append(key)
             for item in items_to_remove:
@@ -185,7 +185,7 @@ class BaseCog(commands.Cog):
             jw().write(self.paths["cache"], cache_data, logger=logger,
                        backup=False)
 
-            admin_data["last-check-date"] = check_date.isoformat()
+            admin_data["last_check_date"] = check_date.isoformat()
             jw().write(self.paths["admin"], admin_data, logger=logger)
 
             logger.info("Cache check complete.")
@@ -218,12 +218,12 @@ class BaseCog(commands.Cog):
         cache_data = jr().extract_from_json_cache(self.paths["cache"],
                                                   logger=logger)
 
-        course_key = f"{course}-{semester}-{campus}"
+        course_key = f"{course}_{semester}_{campus}"
 
         if (course_key in cache_data and
-                "request-date" in cache_data[course_key]):
+                "request_date" in cache_data[course_key]):
             request_date = datetime.fromisoformat(
-                cache_data[course_key]["request-date"]
+                cache_data[course_key]["request_date"]
             )
             now = datetime.now()
 
@@ -242,7 +242,7 @@ class BaseCog(commands.Cog):
 
         cache_data[course_key] = {
             "course": course_obj.get_course(),
-            "request-date": datetime.now().isoformat()
+            "request_date": datetime.now().isoformat()
         }
 
         jw().write(self.paths["cache"], cache_data, logger=logger, backup=False)
