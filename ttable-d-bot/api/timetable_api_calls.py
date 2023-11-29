@@ -160,21 +160,21 @@ class CourseTimetable:
             main_key = main_key.split("|")
             # -P signals that the activity should have a pair (for
             # generality I assume group, so more than 2, but I haven't seen
-            # that yet.
+            # that yet).
             if "-P" not in main_key[2]:
                 continue
 
             for j, pair_key in enumerate(self.get_activities()):
-                pair_key = pair_key.split("|")
+                split_pair_key = pair_key.split("|")
                 if (
                         i == j or
-                        "-P" not in pair_key[2] or
-                        main_key[1] != pair_key[1]
+                        "-P" not in split_pair_key[2] or
+                        main_key[1] != split_pair_key[1]
                 ):
                     continue
 
-                if main_key[2][:-1] == pair_key[2][:-1]:
-                    main_value["group"].append("|".join(pair_key))
+                if main_key[2][:-1] == split_pair_key[2][:-1]:
+                    main_value["group"].append(pair_key)
 
     def get_course_list(self) -> list[str]:
         return list(self.course_versions)
