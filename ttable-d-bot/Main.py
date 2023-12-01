@@ -1,6 +1,7 @@
 import discord
 import logging
 import os
+from dotenv import load_dotenv
 
 from discord.ext import commands
 from constants.common import *
@@ -49,4 +50,5 @@ if __name__ == "__main__":
     bot = UQTimetableBot()
 
     # Run the bot with your token
-    bot.run("no")
+    load_dotenv()
+    bot.run(os.getenv("DISCORD_TOKEN"))
