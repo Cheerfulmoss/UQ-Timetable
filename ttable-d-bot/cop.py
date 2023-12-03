@@ -24,14 +24,28 @@ method_2: rate solution with some reward funtion and order them based on the sco
     - Avoid having 8 hours of class in one day?
     - Maybe customize time frame to avoid?
 """
+from typing import Optional, Dict, Tuple
+
 from api.timetable_api_calls import *
 from api.TTableInputs import *
 
-
+"""
+I am currently unable to recall what is the key for courseID like 'CSSE2010' and for activity length
+Therefore line 60 and line 64 will not work
+Will fix it later when API is back.
+"""
 class Solver:
-    def __init__(self):
+    def __init__(self, courses: Optional[list[CourseTimetable]] = None):
         self.variables = []  # Initialise variables to be an empty list
         self.domains = {}  #Initialise a dictionary of domains
+        self.length_constraint = {}
+        self.intersect_constraints = [] # basically, the variables that must not intersect
+        # for example, if a delayed lecture is assigned, we do not need to worry about it, so we will remove it from
+        # intersect constraints. By default, every variable will be in the intersect constraint.
+
+        if courses != None:
+            for course in courses:
+                self.process_conditions(course)
 
     def process_conditions(self, course: CourseTimetable):
         """
@@ -43,11 +57,22 @@ class Solver:
         for activity in course.get_activities().values():
             code = activity.get("activity_code")
             if code not in self.variables:
-                self.variables.append(activity.get("activity_code"))
+                activity_id = (course.get_course()[0] + activity.get("activity_code")) # FIX!
+                self.variables.append(activity_id)
                 self.domains[code] = list()
+                self.intersect_constraints.append(activity.get("activity_code"))
+                self.length_constraint[activity_id] = None # FIX!
 
 
-
+    """
+    :var assignment: the dictionary representing the assigned values
+         The key should be a tuple in the format of (course_code, activity_code)
+         and value should be a tuple in the format of (day, start_time, end_time)
+         where day must be an integer in range(1, 6)
+         start_time and end_time must be in DAY_TIME_FORMAT
+    """
+    def check_intersect_constraints(self, assignment:dict[tuple[str, str], tuple[int, str, str]]) -> bool:
+        pass
 
 """
 Variables are the activities. 'activity-group-code'
